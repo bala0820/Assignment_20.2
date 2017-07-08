@@ -1,0 +1,36 @@
+create table acad(empid INT NOT NULL AUTO_INCREMENT, empname VARCHAR(100), empsal INT, PRIMARY KEY(empid));
+
+INSERT into acad values(1, "bala", 50000),(2, "sriram", 300000),(3, "ashok", 20000);
+
+sqoop import --connect jdbc:mysql://localhost/sqoopdb1 \
+--username root \
+--password cloudera \
+--table acad -m1 \
+--target-dir /user/cloudera/sqoopout1
+
+
+
+sqoop export --connect jdbc:mysql://localhost/sqoopdb1 \
+--username root \
+--password cloudera \
+--table emp \
+--export-dir /user/cloudera/emp.txt \
+--input-fields-terminated-by ',';
+
+
+hadoop fs -cat /user/cloudera/sqoopout1/part-m-00000
+
+
+INSERT into acad values(4, "Lakshmi", 50000),(5, "Aravind", 300000),(6, "Krishna", 200000);
+
+sqoop import --connect jdbc:mysql://localhost/sqoopdb1 \
+--username root \
+--password cloudera \
+--table acad \
+--target-dir /user/cloudera/sqoopout2 \
+--incremental append \
+--check-column empid \
+--last value 3
+
+
+hadoop fs -cat /user/cloudera/sqoopout2/part-m-00000
